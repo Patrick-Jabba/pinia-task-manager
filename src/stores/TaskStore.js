@@ -1,20 +1,11 @@
 import { defineStore } from "pinia";
+import services from "../services";
+import delay from "../utils/delay";
 
 export const useTaskStore = defineStore('taskStore', {
   state: () => ({
-    tasks: [
-      {
-        id: 1,
-        title: "buy milk",
-        isFav: false
-      },
-      {
-        id: 2,
-        title: "play Gloomhaven",
-        isFav: true
-      }
-    ],
-    user: 'Patrick Monteiro'
+    tasks: [],
+    isLoading: false
   }),
   getters: {
     favs() {
@@ -30,15 +21,61 @@ export const useTaskStore = defineStore('taskStore', {
     }
   },
   actions: {
-    addTask(task) {
-      this.tasks.push(task)  
+    async getTasks() {
+      try {
+        this.isLoading = true
+        await delay(2000)
+        const response = await services.tasks.getTasks()
+        this.tasks = response.data
+        return;
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.isLoading = false
+      }
     },
-    deleteTask(taskId){
-      this.tasks = this.tasks.filter((task) => task.id !== taskId)
+    async addTask(task) {
+      try {
+        this.isLoading = true
+        await delay(2000)
+
+        const addedTask = await services.tasks.createTask(task)
+
+        this.tasks.push(addedTask)
+
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.isLoading =false
+      }
     },
-    toggleFav(taskId) {
-      const task = this.tasks.find(task => task.id === taskId) 
-      task.isFav = !task.isFav
+    async deleteTask(taskId) {
+      try {
+        this.isLoading = true
+        await delay(2000)
+        this.tasks = this.tasks.filter((task) => task.id !== taskId)
+        
+        services.tasks.deleteTask(taskId)
+        
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+    async toggleFav(taskSelected) {
+      try {
+        this.isLoading = true
+        await delay(1000)
+        const task = this.tasks.find(task => task.id === taskSelected.id)
+        task.isFav = !task.isFav
+        
+        await services.tasks.toggleFavStatus(task)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.isLoading = false
+      }
     }
   }
 })

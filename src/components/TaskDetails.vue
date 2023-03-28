@@ -1,11 +1,15 @@
 <script setup>
-import { defineProps } from 'vue';
+import { onMounted } from 'vue';
 import { useTaskStore } from '../stores/TaskStore';
-  const props = defineProps({
+  defineProps({
     task: Object
   })
 
 const taskStore = useTaskStore()
+
+onMounted(() => {
+  taskStore.getTasks()
+})
 
 </script>
 
@@ -20,7 +24,7 @@ const taskStore = useTaskStore()
         delete
       </i>
       <i 
-        @click="taskStore.toggleFav(task.id)" 
+        @click="taskStore.toggleFav(task)" 
         class="material-icons"
         :class="{active: task.isFav}"
       >
